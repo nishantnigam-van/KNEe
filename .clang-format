@@ -1,0 +1,62 @@
+# AI Generated
+
+BasedOnStyle: LLVM
+
+# === Indentation ===
+IndentWidth: 4
+ContinuationIndentWidth: 4
+TabWidth: 4
+UseTab: Never
+
+# === Pointer alignment ===
+PointerAlignment: Right
+DerivePointerAlignment: false
+
+# === Line length ===
+ColumnLimit: 120
+
+# === Compact but readable ===
+AllowShortFunctionsOnASingleLine: false
+AllowShortIfStatementsOnASingleLine: true
+AllowShortLoopsOnASingleLine: true
+AllowShortBlocksOnASingleLine: Empty
+
+# === Function formatting ===
+BreakAfterAttributes: Always
+PenaltyReturnTypeOnItsOwnLine: 100
+BreakAfterReturnType: Automatic           # All | Automatic
+
+BinPackParameters: OnePerLine
+
+# === Spacing ===
+SpaceBeforeParens: ControlStatements
+SpacesInParentheses: false
+SpaceAfterCStyleCast: false
+
+# === Structs / Initializers ===
+#PackArguments:
+#  BinPack: OnePerLine
+AlignConsecutiveDeclarations: false
+
+# === Switch / case ===
+IndentCaseLabels: true
+
+# === Alignment (keep minimal) ===
+AlignOperands: true
+AlignTrailingComments: false
+
+# === Includes ===
+SortIncludes: true
+
+# === Comments ===
+ReflowComments: true
+
+# === Misc ===
+MaxEmptyLinesToKeep: 1
+KeepEmptyLinesAtTheStartOfBlocks: false
+
+Cpp11BracedListStyle: false
+BracedInitializerIndentWidth: 4
+
+PackConstructorInitializers: Never
+BreakTemplateDeclarations: Leave
