@@ -30,6 +30,7 @@ target_include_directories(knee
     PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}/src/
         ${CMAKE_CURRENT_SOURCE_DIR}/src/frontend/
+	${CMAKE_CURRENT_SOURCE_DIR}/src/backend/
 )
 target_compile_features(knee
     PRIVATE
