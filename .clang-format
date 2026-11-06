@@ -58,5 +58,5 @@ KeepEmptyLinesAtTheStartOfBlocks: false
 Cpp11BracedListStyle: false
 BracedInitializerIndentWidth: 4
 
-PackConstructorInitializers: Never
+PackConstructorInitializers: CurrentLine
 BreakTemplateDeclarations: Leave

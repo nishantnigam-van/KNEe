@@ -5,6 +5,7 @@
 
 namespace EVENT {
 enum ENUM {
+    // Input-ish
     Open_Folder,
 };
 

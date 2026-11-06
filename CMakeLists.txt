@@ -23,10 +23,13 @@ add_executable(knee)
 target_sources(knee
     PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp
+
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/frontend/renderer.cpp
 )
-target_link_directories(knee
+target_include_directories(knee
     PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}/src/
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/frontend/
 )
 target_compile_features(knee
     PRIVATE
