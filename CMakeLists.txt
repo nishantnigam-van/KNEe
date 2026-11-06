@@ -25,6 +25,7 @@ target_sources(knee
         ${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp
 
         ${CMAKE_CURRENT_SOURCE_DIR}/src/frontend/renderer.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/backend/callaction.cpp
 )
 target_include_directories(knee
     PRIVATE

@@ -3,6 +3,8 @@
 #include "ftxui/ftxui.hpp"
 #include <memory>
 
+#include "file.hpp"
+
 using namespace ftxui;
 
 struct Renderer::Impl {
@@ -17,18 +19,23 @@ struct Renderer::Impl {
 Renderer::Renderer(const Model &m) : pImpl(std::make_unique<Impl>(m)) {
     auto &impl = this->pImpl;
 
-    std::vector<std::string> entries = {
-        "Entry 1",
-        "Entry 2",
-        "Entry 3",
-    };
+    auto &files = impl->m_model.files;
+    std::vector<std::string> entries;
+    entries.reserve(files.size());
+    for (const auto &f : files) {
+        entries.emplace_back(f.path.filename().string());
+    }
+
     int selected = 0;
 
-    // Create a menu component
+    // Create a menu component (can also be decorated with | (pipe) operator)
     auto menu = Menu(&entries, &selected);
 
-    // You can decorate components using the pipe operator.
-    auto component = menu | border;
+    auto component = ftxui::Renderer(menu, [&] {
+        return vbox({
+            window(text("path ") | bold, menu->Render()),
+        });
+    });
 
     impl->component = component;
     impl->app.Loop(component);
