@@ -7,6 +7,7 @@ namespace EVENT {
 enum ENUM {
     // Input-ish
     Open_Folder,
+    Open_Parent_Folder, // means goes back a directory
 };
 
 struct Data_OpenFolder {

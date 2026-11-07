@@ -10,6 +10,7 @@ enum class Mode {
 
 struct Model {
     Mode mode{};
+    std::filesystem::path parent_path; // needed cause in some cases
     std::vector<FileNode> files;
 };
 
