@@ -25,6 +25,7 @@ target_sources(knee
         ${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp
 
         ${CMAKE_CURRENT_SOURCE_DIR}/src/frontend/renderer.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/frontend/input_manager.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/src/backend/file_handler.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/src/backend/file_opener.cpp
 )

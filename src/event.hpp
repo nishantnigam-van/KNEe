@@ -2,6 +2,7 @@
 #define EVENT_H
 
 #include <filesystem>
+#include <variant>
 
 namespace EVENT {
 enum ENUM {
@@ -18,7 +19,7 @@ struct Data_OpenFolder {
 
 struct Event {
     EVENT::ENUM ev;
-    void *data;
+    std::variant<EVENT::Data_OpenFolder> data;
 };
 
 #endif
