@@ -5,7 +5,7 @@
 #include <memory>
 #include <queue>
 
-#include "file.hpp"
+#include <string>
 
 namespace ui = ftxui;
 
@@ -15,7 +15,7 @@ struct Renderer::Impl {
 
     ui::App app;
     ui::Component component; // represents the final component
-    int selected; // current selected entry in list of files
+    int selected{ 0 }; // current selected entry in list of files
 
     Impl(const Model &m) : m_model(m), app(ui::App::TerminalOutput()) {
     }
@@ -35,12 +35,16 @@ Renderer::Renderer(const Model &m) : pImpl(std::make_unique<Impl>(m)) {
     auto menu = ui::Menu(&entries, &impl->selected);
     menu |= ui::CatchEvent([&](ftxui::Event ev) {
         if (ev == ftxui::Event::q || ev == ftxui::Event::Q) {
+            impl->event_queue.push({ EVENT::QUIT, {} });
             impl->app.Exit();
             return true;
         } else if (ev == ui::Event::J) {
-            impl->event_queue.emplace(EVENT::Open_Folder, EVENT::Data_OpenFolder{ .path = files[impl->selected].path });
+            impl->event_queue.push(
+                { EVENT::Open_Folder, EVENT::Data_OpenFolder{ .path = files[impl->selected].path } });
+            return true;
         } else if (ev == ui::Event::K) {
-            impl->event_queue.emplace(EVENT::Open_Folder, EVENT::Data_OpenFolder{ .path = files[impl->selected].path });
+            impl->event_queue.emplace(EVENT::Open_Parent_Folder, EVENT::Data_OpenFolder{ .path = parent_path });
+            return true;
         }
 
         return false;
