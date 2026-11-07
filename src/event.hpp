@@ -1,7 +1,7 @@
 #ifndef EVENT_H
 #define EVENT_H
 
-#include <string>
+#include <filesystem>
 
 namespace EVENT {
 enum ENUM {
@@ -10,7 +10,7 @@ enum ENUM {
 };
 
 struct Data_OpenFolder {
-    std::string path;
+    std::filesystem::path path;
 };
 
 } // namespace EVENT
