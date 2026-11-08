@@ -16,10 +16,11 @@ void create_default(Model &model) {
         auto is_directory = fs::is_directory(entry.path());
         model.files.emplace_back(entry.path(), is_directory, is_directory ? 0 : fs::file_size(entry.path()));
     }
+    model.updated = true;
 }
 
 void action_open_folder(Model &model, const Event &event) {
-    const auto &data = get<EVENT::Data_OpenFolder>(event.data); // kinda convert pointer to that struct
+    const auto &data = get<EVENT::Data_OpenFolder>(event.data);
     auto &path = data.path; // in the struct its in variable named path
     model.parent_path = path;
     if (!fs::is_directory(path)) {
@@ -34,13 +35,20 @@ void action_open_folder(Model &model, const Event &event) {
         }
     }
 }
+
 void action_open_parent_folder(Model &model, const Event &event) {
     auto new_parent_path = model.parent_path.parent_path();
     model.files.clear();
+    int i = 0;
     for (auto const &entry : fs::directory_iterator(new_parent_path)) {
         auto is_directory = fs::is_directory(entry.path());
         model.files.emplace_back(entry.path(), is_directory, is_directory ? 0 : fs::file_size(entry.path()));
+        if (entry.path() == model.parent_path)
+            model.to_select = i;
+        else
+            i++;
     }
+    model.parent_path = new_parent_path;
 }
 
 void action_delete_file(Model &model, const Event &event) {

@@ -8,12 +8,14 @@
 
 class InputManager {
   public:
-    InputManager(Model &m, std::queue<Event> &event_queue);
+    InputManager(Model &m);
 
+    std::queue<Event> *event_queue();
     bool handle();
+    void reset_defaults();
 
   private:
-    std::queue<Event> &m_event_queue;
+    std::queue<Event> m_event_queue{};
     Model &m_model;
 };
 

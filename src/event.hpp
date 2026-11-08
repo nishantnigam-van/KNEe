@@ -34,7 +34,7 @@ struct Data_Delete {
 
 struct Event {
     EVENT::ENUM ev;
-    std::variant<EVENT::Data_OpenFolder, EVENT::Data_Rename, EVENT::Data_Delete> data;
+    std::variant<std::nullptr_t, EVENT::Data_OpenFolder, EVENT::Data_Rename, EVENT::Data_Delete> data;
 };
 
 #endif

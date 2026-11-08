@@ -2,71 +2,117 @@
 
 #include "event.hpp"
 #include "ftxui/ftxui.hpp"
+#include <filesystem>
+#include <format>
 #include <memory>
 #include <queue>
 
-#include <string>
-
 namespace ui = ftxui;
+namespace fs = std::filesystem;
 
-struct Renderer::Impl {
-    const Model &m_model;
-    std::queue<Event> event_queue{};
+namespace {
+struct _Data {
+    const Model &model;
+    int selected{ 0 };
 
-    ui::App app;
-    ui::Component component; // represents the final component
-    int selected{ 0 }; // current selected entry in list of files
+    _Data(const Model &model) : model(model) {
+    }
 
-    Impl(const Model &m) : m_model(m), app(ui::App::TerminalOutput()) {
+    void update(const ui::Component *pmenu) {
+        auto menu = *pmenu;
+        menu->DetachAllChildren();
+
+        const auto &files = model.files;
+
+        for (const auto &f : files) {
+            auto is_directory = f.is_directory;
+            menu->Add(ui::MenuEntry(std::format("{:10.2f}K {}", (float)f.size / 1000, f.path.filename().string()),
+                                    ui::MenuEntryOption{ .transform = [is_directory](ui::EntryState state) {
+                                        state.label = std::format("{} {}",
+                                                                  state.focused ? (is_directory ? ">>" : "->")
+                                                                                : (is_directory ? "> " : "- "),
+                                                                  state.label);
+                                        ui::Element e = ui::text(state.label);
+
+                                        if (is_directory) {
+                                            e = e | color(ui::Color::LightSkyBlue1);
+                                        }
+
+                                        if (state.focused) {
+                                            e |= ui::bgcolor(ui::Color::RGBA(06, 15, 20, 255));
+                                            e |= ui::bold;
+                                        }
+
+                                        return e;
+                                    } }));
+        }
+
+        selected = model.to_select;
     }
 };
 
-Renderer::Renderer(const Model &m) : pImpl(std::make_unique<Impl>(m)) {
-    auto &impl = this->pImpl;
+ui::Component init_component(_Data *rdata, ui::App *screen, ui::Component *pmenu, std::queue<Event> *event_queue) {
+    rdata->update(pmenu);
 
-    auto &parent_path = impl->m_model.parent_path;
-    auto &files = impl->m_model.files;
-    std::vector<std::string> entries;
-    entries.reserve(files.size());
-    for (const auto &f : files) {
-        entries.emplace_back(f.path.filename().string());
-    }
+    auto menu = *pmenu;
 
-    auto menu = ui::Menu(&entries, &impl->selected);
-    menu |= ui::CatchEvent([&](ftxui::Event ev) {
+    menu |= ui::CatchEvent([rdata, screen, event_queue](ftxui::Event ev) {
         if (ev == ftxui::Event::q || ev == ftxui::Event::Q) {
-            impl->event_queue.push({ EVENT::QUIT, {} });
-            impl->app.Exit();
+            event_queue->push({ EVENT::QUIT, {} });
+            screen->Exit();
             return true;
         } else if (ev == ui::Event::J) {
-            impl->event_queue.push(
-                { EVENT::Open_Folder, EVENT::Data_OpenFolder{ .path = files[impl->selected].path } });
+            const auto &files = rdata->model.files;
+            const auto &to_open = files[rdata->selected].path;
+            if (fs::is_directory(to_open))
+                event_queue->push({ EVENT::Open_Folder, EVENT::Data_OpenFolder{ .path = to_open } });
             return true;
         } else if (ev == ui::Event::K) {
-            impl->event_queue.emplace(EVENT::Open_Parent_Folder, EVENT::Data_OpenFolder{ .path = parent_path });
+            const auto &parent_path = rdata->model.parent_path;
+            event_queue->emplace(EVENT::Open_Parent_Folder, nullptr);
             return true;
         }
 
         return false;
     });
 
-    auto component = ftxui::Renderer(menu, [&] {
+    return ftxui::Renderer(menu, [rdata, menu] {
         return ui::vbox({
-            window(ui::text(parent_path.string()) | ui::bold, menu->Render()),
+            window(ui::text(rdata->model.parent_path.string()) | ui::bold, menu->Render()),
         });
     });
-    impl->component = component;
-    impl->app.Loop(component);
+}
+} // namespace
+
+struct Renderer::Impl {
+    _Data m_rdata;
+
+    ui::App m_screen;
+    ui::Component m_menu;
+    ui::Component m_component; // represents the final component
+    ui::Loop m_loop;
+
+    Impl(_Data &&rdata, ui::App &&screen, std::queue<Event> *event_queue)
+        : m_rdata(std::move(rdata)),
+          m_screen(std::move(screen)),
+          m_menu(ui::Container::Vertical({}, &m_rdata.selected)),
+          m_component(init_component(&m_rdata, &m_screen, &m_menu, event_queue)),
+          m_loop(&m_screen, m_component) {
+    }
+};
+
+Renderer::Renderer(const Model &m, std::queue<Event> *event_queue)
+    : pImpl(std::make_unique<Renderer::Impl>(_Data(m), ui::App::TerminalOutput(), event_queue)) {
 }
 
 Renderer::~Renderer() {
 }
 
-std::queue<Event> &Renderer::event_queue() {
-    auto &impl = this->pImpl;
-    return impl->event_queue;
-};
-
 void Renderer::render() {
     auto &impl = this->pImpl;
+    if (impl->m_rdata.model.updated) {
+        impl->m_rdata.update(&impl->m_menu);
+        impl->m_screen.RequestAnimationFrame();
+    }
+    impl->m_loop.RunOnce();
 }

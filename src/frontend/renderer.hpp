@@ -9,10 +9,10 @@
 
 class Renderer {
   public:
-    Renderer(const Model &m);
+    Renderer(const Model &m, std::queue<Event> *event_queue);
     ~Renderer();
 
-    std::queue<Event>& event_queue();
+    std::queue<Event> &event_queue();
     void render();
 
   private:
