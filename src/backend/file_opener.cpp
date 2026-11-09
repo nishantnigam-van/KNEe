@@ -17,8 +17,8 @@ bool openfile(std::filesystem::path path) {
     return (int)ShellExecuteW(nullptr, L"open", path.wstring(), c_str(), nullptr, nullptr, SW_SHOWNORMAL) >
            32; // apprantly this windows api call return >32 if it was success but in format HINSTANCE
 #elif defined(__APPLE__)
-    return std::system(("open \"" + path.string()).c_str()) == 0;
+    return std::system(("open " + path.string()).c_str()) == 0;
 #else
-    return std::system(("xdg-open \"" + path.string()).c_str()) == 0;
+    return std::system(("xdg-open " + path.string() + " 2> /dev/null").c_str()) == 0;
 #endif
 }

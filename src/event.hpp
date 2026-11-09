@@ -9,7 +9,7 @@ enum ENUM {
     QUIT,
 
     // Input-ish
-    Open_Folder,
+    Open,
     Open_Parent_Folder, // means goes back a directory
     Create_Directory,
     Create_File,

@@ -1,5 +1,6 @@
 #include "file_handler.hpp"
 #include "event.hpp"
+#include "file.hpp"
 #include "file_opener.hpp"
 
 #include <filesystem>
@@ -9,14 +10,21 @@
 
 namespace fs = std::filesystem;
 
-void create_default(Model &model) {
-    auto path = fs::current_path();
-    model.parent_path = path;
-    for (auto const &entry : fs::directory_iterator(path)) {
-        auto is_directory = fs::is_directory(entry.path());
-        model.files.emplace_back(entry.path(), is_directory, is_directory ? 0 : fs::file_size(entry.path()));
-    }
-    model.updated = true;
+namespace {
+
+void sort_files(Model &model) {
+    auto &files = model.files;
+    std::sort(files.begin(), files.end(), [](FileNode x, FileNode y) -> int {
+        if (x.is_directory && y.is_directory) {
+            return x.path < y.path;
+        } else if (x.is_directory) {
+            return true;
+        } else if (y.is_directory) {
+            return false;
+        } else {
+            return x.path < y.path;
+        }
+    });
 }
 
 void action_open_folder(Model &model, const Event &event) {
@@ -34,21 +42,31 @@ void action_open_folder(Model &model, const Event &event) {
             model.files.emplace_back(entry.path(), is_directory, is_directory ? 0 : fs::file_size(entry.path()));
         }
     }
+
+    sort_files(model);
 }
 
 void action_open_parent_folder(Model &model, const Event &event) {
-    auto new_parent_path = model.parent_path.parent_path();
+    const auto old_path = model.parent_path;
+    model.parent_path = model.parent_path.parent_path();
+
     model.files.clear();
-    int i = 0;
-    for (auto const &entry : fs::directory_iterator(new_parent_path)) {
+    for (auto const &entry : fs::directory_iterator(model.parent_path)) {
         auto is_directory = fs::is_directory(entry.path());
         model.files.emplace_back(entry.path(), is_directory, is_directory ? 0 : fs::file_size(entry.path()));
-        if (entry.path() == model.parent_path)
-            model.to_select = i;
-        else
-            i++;
     }
-    model.parent_path = new_parent_path;
+
+    sort_files(model);
+
+    int i = 0;
+    for (auto const &entry : model.files) {
+        if (entry.path == old_path) {
+            model.to_select = i;
+            break;
+        } else {
+            i++;
+        }
+    }
 }
 
 void action_delete_file(Model &model, const Event &event) {
@@ -62,6 +80,8 @@ void action_delete_file(Model &model, const Event &event) {
         }
     }
     if (error) std::cout << "Error Deleting files" << error.message();
+
+    sort_files(model);
 }
 
 void action_rename(Model &model, const Event &event) {
@@ -72,11 +92,27 @@ void action_rename(Model &model, const Event &event) {
     std::error_code error;
     fs::rename(path, model.parent_path / data.name, error);
     if (error) std::cout << "Error Renaming the file!" << error.message();
+
+    sort_files(model);
+}
+
+} // namespace
+
+void create_default(Model &model) {
+    auto path = fs::current_path();
+    model.parent_path = path;
+    for (auto const &entry : fs::directory_iterator(path)) {
+        auto is_directory = fs::is_directory(entry.path());
+        model.files.emplace_back(entry.path(), is_directory, is_directory ? 0 : fs::file_size(entry.path()));
+    }
+    model.updated = true;
+
+    sort_files(model);
 }
 
 void handle_action(Model &model, const Event &event) {
     switch (event.ev) {
-        case EVENT::Open_Folder:
+        case EVENT::Open:
             action_open_folder(model, event);
             break;
         case EVENT::Open_Parent_Folder:

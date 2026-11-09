@@ -25,21 +25,27 @@ struct _Data {
         const auto &files = model.files;
 
         for (const auto &f : files) {
+            static constexpr std::string icons[] = { "-", ">" };
+
             auto is_directory = f.is_directory;
-            menu->Add(ui::MenuEntry(std::format("{:10.2f}K {}", (float)f.size / 1000, f.path.filename().string()),
-                                    ui::MenuEntryOption{ .transform = [is_directory](ui::EntryState state) {
-                                        state.label = std::format("{} {}",
-                                                                  state.focused ? (is_directory ? ">>" : "->")
-                                                                                : (is_directory ? "> " : "- "),
-                                                                  state.label);
+            auto icon = icons[is_directory];
+            auto prefix = [icon](bool focused) -> std::string {
+                if (focused)
+                    return icon + '>';
+                else
+                    return icon;
+            };
+            auto color = is_directory ? ui::Color::LightSkyBlue1 : ui::Color::RGBA(0, 0, 0, 0);
+
+            menu->Add(ui::MenuEntry(f.path.filename().string(),
+                                    ui::MenuEntryOption{ .transform = [prefix, color](ui::EntryState state) {
+                                        state.label = std::format("{}  {}", prefix(state.focused), state.label);
                                         ui::Element e = ui::text(state.label);
 
-                                        if (is_directory) {
-                                            e = e | color(ui::Color::LightSkyBlue1);
-                                        }
+                                        e = e | ui::color(color);
 
                                         if (state.focused) {
-                                            e |= ui::bgcolor(ui::Color::RGBA(06, 15, 20, 255));
+                                            e |= ui::bgcolor(ui::Color::RGBA(05, 05, 05, 255));
                                             e |= ui::bold;
                                         }
 
@@ -64,8 +70,7 @@ ui::Component init_component(_Data *rdata, ui::App *screen, ui::Component *pmenu
         } else if (ev == ui::Event::J) {
             const auto &files = rdata->model.files;
             const auto &to_open = files[rdata->selected].path;
-            if (fs::is_directory(to_open))
-                event_queue->push({ EVENT::Open_Folder, EVENT::Data_OpenFolder{ .path = to_open } });
+            event_queue->push({ EVENT::Open, EVENT::Data_OpenFolder{ .path = to_open } });
             return true;
         } else if (ev == ui::Event::K) {
             const auto &parent_path = rdata->model.parent_path;
