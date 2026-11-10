@@ -25,15 +25,18 @@ struct _Data {
         const auto &files = model.files;
 
         for (const auto &f : files) {
-            static constexpr std::string icons[] = { "-", ">" };
+            static constexpr std::string_view icons[] = {
+                "-", ">"
+            }; // apparantly this constexpr is annoying with sting[], it tries to allocate heap memory at compile time
+               // which crashes on some complier (windows)
 
             auto is_directory = f.is_directory;
             auto icon = icons[is_directory];
             auto prefix = [icon](bool focused) -> std::string {
                 if (focused)
-                    return icon + '>';
+                    return std::string(icon) + '>';
                 else
-                    return icon;
+                    return std::string(icon);
             };
             auto color = is_directory ? ui::Color::LightSkyBlue1 : ui::Color::RGBA(0, 0, 0, 0);
 

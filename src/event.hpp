@@ -11,8 +11,7 @@ enum ENUM {
     // Input-ish
     Open,
     Open_Parent_Folder, // means goes back a directory
-    Create_Directory,
-    Create_File,
+    Create_File, // just pass is directory to this
     Rename,
     Delete,
 };
@@ -26,6 +25,12 @@ struct Data_Rename {
     std::string name;
 };
 
+struct Data_Create_File { // handle this
+    std::string name;
+    std::filesystem::path path; // you can chose not to give this // if not given creates in parent directory
+    bool is_directory;
+};
+
 struct Data_Delete {
     std::filesystem::path path;
 };
@@ -34,7 +39,9 @@ struct Data_Delete {
 
 struct Event {
     EVENT::ENUM ev;
-    std::variant<std::nullptr_t, EVENT::Data_OpenFolder, EVENT::Data_Rename, EVENT::Data_Delete> data;
+    std::
+        variant<std::nullptr_t, EVENT::Data_OpenFolder, EVENT::Data_Rename, EVENT::Data_Delete, EVENT::Data_Create_File>
+            data;
 };
 
 #endif

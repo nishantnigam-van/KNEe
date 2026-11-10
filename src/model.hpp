@@ -15,6 +15,8 @@ struct Model {
     std::filesystem::path parent_path; // needed cause in some cases
     std::vector<FileNode> files;
     int to_select{ 0 }; // not actual position of selection, only during re-modelling for going up a directory
+
+    std::string current_error;
 };
 
 #endif

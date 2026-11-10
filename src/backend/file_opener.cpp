@@ -14,7 +14,7 @@
 
 bool openfile(std::filesystem::path path) {
 #ifdef _WIN32
-    return (int)ShellExecuteW(nullptr, L"open", path.wstring(), c_str(), nullptr, nullptr, SW_SHOWNORMAL) >
+    return (INT_PTR)ShellExecuteW(nullptr, L"open", path.wstring(), c_str(), nullptr, nullptr, SW_SHOWNORMAL) >
            32; // apprantly this windows api call return >32 if it was success but in format HINSTANCE
 #elif defined(__APPLE__)
     return std::system(("open " + path.string()).c_str()) == 0;
