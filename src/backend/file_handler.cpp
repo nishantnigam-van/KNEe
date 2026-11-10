@@ -70,8 +70,8 @@ void action_open_parent_folder(Model &model, const Event &event) {
     }
 }
 
-void action_delete(Model &model, const Event &event) {
-    const auto &data = std::get<EVENT::Data_Delete>(event.data); // kinda convert pointer to that struct
+void action_delete_file(Model &model, const Event &event) {
+    const auto &data = std::get<EVENT::Data_Delete>(event.data);
     auto &path = data.path;
     std::error_code error;
     if (fs::remove_all(path, error)) { // this one return uintmax_t that is the number of files deleted

@@ -33,11 +33,17 @@ target_include_directories(knee
     PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}/src/
         ${CMAKE_CURRENT_SOURCE_DIR}/src/frontend/
-	${CMAKE_CURRENT_SOURCE_DIR}/src/backend/
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/backend/
 )
 target_compile_features(knee
     PRIVATE
         cxx_std_23
+)
+target_compile_options(knee
+    PRIVATE
+        -Wall
+        -pedantic
+        -O3
 )
 target_link_libraries(knee
     PRIVATE

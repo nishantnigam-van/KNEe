@@ -8,7 +8,6 @@
 #include <queue>
 
 namespace ui = ftxui;
-namespace fs = std::filesystem;
 
 namespace {
 struct _Data {
@@ -25,18 +24,15 @@ struct _Data {
         const auto &files = model.files;
 
         for (const auto &f : files) {
-            static constexpr std::string_view icons[] = {
-                "-", ">"
-            }; // apparantly this constexpr is annoying with sting[], it tries to allocate heap memory at compile time
-               // which crashes on some complier (windows)
+            static const std::string icons[] = { "-", ">" };
 
             auto is_directory = f.is_directory;
             auto icon = icons[is_directory];
             auto prefix = [icon](bool focused) -> std::string {
                 if (focused)
-                    return std::string(icon) + '>';
+                    return icon + '>';
                 else
-                    return std::string(icon);
+                    return icon;
             };
             auto color = is_directory ? ui::Color::LightSkyBlue1 : ui::Color::RGBA(0, 0, 0, 0);
 
@@ -60,25 +56,31 @@ struct _Data {
     }
 };
 
-ui::Component init_component(_Data *rdata, ui::App *screen, ui::Component *pmenu, std::queue<Event> *event_queue) {
+ui::Component init_component(_Data *rdata, ui::App *pscreen, ui::Component *pmenu, std::queue<Event> *event_queue) {
     rdata->update(pmenu);
 
     auto menu = *pmenu;
 
-    menu |= ui::CatchEvent([rdata, screen, event_queue](ftxui::Event ev) {
+    menu |= ui::CatchEvent([rdata, pscreen, event_queue](ftxui::Event ev) {
         if (ev == ftxui::Event::q || ev == ftxui::Event::Q) {
             event_queue->push({ EVENT::QUIT, {} });
-            screen->Exit();
+            pscreen->Exit();
             return true;
         } else if (ev == ui::Event::J) {
             const auto &files = rdata->model.files;
             const auto &to_open = files[rdata->selected].path;
-            event_queue->push({ EVENT::Open, EVENT::Data_OpenFolder{ .path = to_open } });
+            event_queue->emplace(EVENT::Open, EVENT::Data_OpenFolder{ .path = to_open });
             return true;
         } else if (ev == ui::Event::K) {
-            const auto &parent_path = rdata->model.parent_path;
             event_queue->emplace(EVENT::Open_Parent_Folder, nullptr);
             return true;
+        } else if (ev == ui::Event::Character("dd")) {
+            /*
+            const auto &files = rdata->model.files;
+            const auto &to_delete = files[rdata->selected].path;
+            event_queue->emplace(EVENT::Delete, EVENT::Data_Delete{ .path = to_delete });
+            return true;
+            */
         }
 
         return false;
