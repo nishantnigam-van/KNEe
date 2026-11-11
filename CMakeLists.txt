@@ -41,9 +41,8 @@ target_compile_features(knee
 )
 target_compile_options(knee
     PRIVATE
-        -Wall
-        -pedantic
-        -O3
+        $<$<CXX_COMPILER_ID:GNU,Clang>:-Wall>
+        $<$<CXX_COMPILER_ID:GNU,Clang>:-pedantic>
 )
 target_link_libraries(knee
     PRIVATE

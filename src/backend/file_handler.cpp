@@ -38,6 +38,19 @@ void sort_files(Model &model) {
     });
 }
 
+// TODO: currently `-1` isn't being handled in the backend
+// frontend will blindly trust model.to_select
+int get_selection(const Model &model, fs::path path) {
+    const auto &files = model.files;
+    for (int i = 0; i < static_cast<int>(files.size()); i++) {
+        if (files[i].path == path) {
+            return i;
+        }
+    }
+
+    return -1;
+}
+
 void action_open_folder(Model &model, const Event &event) {
     const auto &data = get<EVENT::Data_OpenFolder>(event.data);
     auto &path = data.path; // in the struct its in variable named path
@@ -59,15 +72,7 @@ void action_open_parent_folder(Model &model, const Event &event) {
     update_model(model, model.parent_path);
     sort_files(model);
 
-    int i = 0;
-    for (auto const &entry : model.files) {
-        if (entry.path == old_path) {
-            model.to_select = i;
-            break;
-        } else {
-            i++;
-        }
-    }
+    model.to_select = get_selection(model, old_path);
 }
 
 void action_delete_file(Model &model, const Event &event) {
@@ -82,21 +87,25 @@ void action_delete_file(Model &model, const Event &event) {
 }
 
 void action_rename(Model &model, const Event &event) {
-    const auto &data = std::get<EVENT::Data_Rename>(event.data); // kinda convert pointer to that struct
+    const auto &data = std::get<EVENT::Data_Rename>(event.data);
     auto &path = data.path;
+    auto prev_selection = get_selection(model, path);
+
     // rename( const std::filesystem::path& old_p,
     //          const std::filesystem::path& new_p );
     std::error_code error;
     fs::rename(path, model.parent_path / data.name, error);
-    if (error)
+    if (error) {
         model.current_error = "Error renaming files " + error.message();
-    else {
+    } else {
         update_model(model, model.parent_path);
         sort_files(model);
+
+        model.to_select = prev_selection;
     }
 }
 
-void action_create_File(Model &model, const Event &event) {
+void action_create_file(Model &model, const Event &event) {
     const auto &data = std::get<EVENT::Data_Create_File>(event.data); // kinda convert pointer to that struct
     std::error_code error;
     if (data.is_directory) {
@@ -133,13 +142,13 @@ void handle_action(Model &model, const Event &event) {
             action_open_parent_folder(model, event);
             break;
         case EVENT::Delete:
-            action_delete(model, event);
+            action_delete_file(model, event);
             break;
         case EVENT::Rename:
             action_rename(model, event);
             break;
         case EVENT::Create_File:
-            // action_create_File(model,event);
+            // action_create_file(model,event);
             break;
         default:
             break;
