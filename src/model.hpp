@@ -1,7 +1,15 @@
-#include "file.hpp"
-#include <vector>
 #ifndef MODEL_H
 #define MODEL_H
+
+#include <vector>
+#include <cstdint>
+#include <filesystem>
+
+struct FileNode {
+    std::filesystem::path path;
+    bool is_directory = false; // is folder?
+    std::uintmax_t size = 0;
+};
 
 struct Model {
     bool updated{ false };

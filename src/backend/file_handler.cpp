@@ -2,14 +2,14 @@
 // 2. create_directory can be use to copy (i guess)
 // 3. add what more fxns you want........(i cant remember)
 #include "file_handler.hpp"
-#include "event.hpp"
-#include "file.hpp"
-#include "file_opener.hpp"
 
 #include <filesystem>
 #include <string>
 #include <system_error>
 #include <vector>
+
+#include "event.hpp"
+#include "file_opener.hpp"
 
 namespace fs = std::filesystem;
 
@@ -54,14 +54,15 @@ int get_selection(const Model &model, fs::path path) {
 void action_open_folder(Model &model, const Event &event) {
     const auto &data = get<EVENT::Data_OpenFolder>(event.data);
     auto &path = data.path; // in the struct its in variable named path
-    model.parent_path = path;
-    if (!fs::is_directory(path)) {
+
+    if (fs::is_directory(path)) {
+        model.parent_path = path;
+        update_model(model, path);
+        sort_files(model);
+    } else {
         // handle_opening a file
         bool opened = openfile(path);
         if (!opened) model.current_error = "Couldn't open the file!"; // might think some better way to solve this!
-    } else {
-        update_model(model, path);
-        sort_files(model);
     }
 }
 

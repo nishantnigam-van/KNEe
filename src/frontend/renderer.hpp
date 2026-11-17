@@ -2,18 +2,16 @@
 #define RENDERER_H
 
 #include <memory>
-#include <queue>
 
-#include "event.hpp"
 #include "model.hpp"
+#include "event_queue.hpp"
 
 class Renderer {
   public:
-    Renderer(const Model &m, std::queue<Event> *event_queue);
+    Renderer(const Model &m, EventQueue event_queue);
     ~Renderer();
 
-    std::queue<Event> &event_queue();
-    void render();
+    auto render() -> void;
 
   private:
     struct Impl;

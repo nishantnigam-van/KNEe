@@ -1,21 +1,16 @@
 #include "input_manager.hpp"
-#include "file_handler.hpp"
 
-#include <queue>
+#include "file_handler.hpp"
 
 InputManager::InputManager(Model &model) : m_model(model) {
 }
 
-std::queue<Event> *InputManager::event_queue() {
-    return &m_event_queue;
-};
+auto InputManager::handle() -> bool {
+    while (!m_event_queue->empty()) {
+        auto ev = m_event_queue->back();
+        m_event_queue->pop();
 
-bool InputManager::handle() {
-    while (!this->m_event_queue.empty()) {
-        auto ev = m_event_queue.back();
-        m_event_queue.pop();
-
-        handle_action(this->m_model, ev);
+        handle_action(m_model, ev);
 
         if (ev.ev == EVENT::QUIT) {
             return false;
@@ -27,7 +22,7 @@ bool InputManager::handle() {
     return true;
 }
 
-void InputManager::reset_defaults() {
+auto InputManager::reset_defaults() noexcept -> void {
     if (m_model.updated == 1) {
         m_model.updated = 0;
     }

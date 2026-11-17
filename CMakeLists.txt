@@ -44,6 +44,10 @@ target_compile_options(knee
         $<$<CXX_COMPILER_ID:GNU,Clang>:-Wall>
         $<$<CXX_COMPILER_ID:GNU,Clang>:-pedantic>
 )
+target_link_options(knee
+    PRIVATE
+        $<$<CXX_COMPILER_ID:GNU,Clang>:-flto>
+)
 target_link_libraries(knee
     PRIVATE
         ftxui::ftxui
